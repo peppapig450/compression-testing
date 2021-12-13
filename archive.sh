@@ -1,8 +1,8 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 set -Eeuo pipefail
 
-file="$HOME/compression-testing/gcc.1"
+file="$PWD/gcc.1"
 
 if [[ ! -f "$file" ]]; then
 	exit 1
@@ -50,4 +50,43 @@ bzp() {
 		echo "Compressed size with compresion level ""$f"" is $(filesize "$dest")"
 	done
 }
-bzp
+
+lrz() {
+	local status
+	for dir in lrzip/{1..9}; do
+		if [[ ! -d $dir ]]; then
+			echo "$dir is not a directory" && status='1'
+		else
+			status=''
+		fi
+		if [[ $status = '1' ]]; then
+			exit 1
+		fi
+	done
+	for f in {1..9}; do
+		dest="$(pwd)/lrzip/${f}/gcc.1.lrz"
+		lrzip -L "$f" -o "$dest" "$file"
+		echo "Original file size is $ogSize"
+		echo "Compressed size with compresion level ""$f"" is $(filesize "$dest")"
+	done
+}
+
+lz() {
+	for dir in lz4/{1..12}; do
+		if [[ ! -d $dir ]]; then
+			printf '%s\n %s\n' "$dir doesn't exist" "Creating $dir now"
+			mkdir -p "$dir"
+		fi
+	done
+	for f in {1..12}; do
+		dest="$(pwd)/lz4/${f}/gcc.1.lz4"
+		lz4 -"$f" -k "$file" "$dest"
+		echo "Original file size is $ogSize"
+		echo "Compressed size with compresion level ""$f"" is $(filesize "$dest")"
+	done
+}
+
+lzi() {
+  for dir in lzip/{0..9}; do 
+    if [[ ! -d $dir ]]; then 
+      printf '%s\n %s\n' "$dir doesn't exit" "Creating $dir "
